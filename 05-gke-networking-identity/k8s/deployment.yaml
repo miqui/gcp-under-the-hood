@@ -1,0 +1,29 @@
+# Substitute IMAGE and BUCKET first:  envsubst < k8s/deployment.yaml | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: app}
+  template:
+    metadata:
+      labels: {app: app}
+    spec:
+      serviceAccountName: gcs-reader
+      containers:
+        - name: app
+          image: ${IMAGE}
+          ports: [{containerPort: 8080}]
+          readinessProbe:
+            httpGet: {path: /healthz, port: 8080}
+          env:
+            - {name: BUCKET, value: "${BUCKET}"}
+            - {name: KSA_NAME, valueFrom: {fieldRef: {fieldPath: spec.serviceAccountName}}}
+            - {name: POD_IP, valueFrom: {fieldRef: {fieldPath: status.podIP}}}
+            - {name: NODE_NAME, valueFrom: {fieldRef: {fieldPath: spec.nodeName}}}
+            - {name: POD_NAMESPACE, valueFrom: {fieldRef: {fieldPath: metadata.namespace}}}
+          resources:
+            requests: {cpu: 50m, memory: 32Mi}

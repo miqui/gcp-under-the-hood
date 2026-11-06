@@ -1,0 +1,29 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+.terraform.tfstate.lock.info
+*.tfplan
+tfplan
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*-credentials.json
+service-account*.json
+# Go
+bin/
+*.exe
+*.test
+*.out
+vendor/
+# OS/editor
+.DS_Store
+.idea/
+.vscode/

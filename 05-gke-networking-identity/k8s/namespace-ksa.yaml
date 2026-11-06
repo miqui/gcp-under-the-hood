@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+---
+# No annotation needed: the IAM binding targets principal://.../ns/demo/sa/gcs-reader
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gcs-reader
+  namespace: demo

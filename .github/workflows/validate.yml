@@ -1,0 +1,69 @@
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.find.outputs.projects }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: find
+        run: |
+          list=$(ls -d 0[1-6]-*/ 2>/dev/null | sed 's#/##' | jq -R . | jq -sc .)
+          echo "projects=${list:-[]}" >> "$GITHUB_OUTPUT"
+
+  check:
+    needs: detect
+    if: needs.detect.outputs.projects != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.detect.outputs.projects) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+      - name: Terraform fmt/init/validate
+        working-directory: ${{ matrix.project }}
+        run: |
+          if [ -d terraform ]; then
+            cd terraform
+            terraform fmt -check -recursive
+            terraform init -backend=false -input=false
+            terraform validate
+          else
+            echo "no terraform/ dir, skipping"
+          fi
+      - name: Go vet and test
+        working-directory: ${{ matrix.project }}
+        run: |
+          if [ -d go ]; then
+            cd go
+            go vet ./...
+            go test ./...
+          else
+            echo "no go/ dir, skipping"
+          fi
+
+  validate:
+    if: always()
+    needs: [detect, check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate result
+        run: |
+          echo "detect=${{ needs.detect.result }} check=${{ needs.check.result }}"
+          [ "${{ needs.detect.result }}" = "success" ] || exit 1
+          case "${{ needs.check.result }}" in success|skipped) ;; *) exit 1;; esac

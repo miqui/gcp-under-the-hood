@@ -1,0 +1,27 @@
+# Enforced by Dataplane V2 (no Calico add-on needed).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: demo
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+# Allow pods labelled role=client and the Google LB / health-check ranges.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-client-and-lb
+  namespace: demo
+spec:
+  podSelector:
+    matchLabels: {app: app}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {role: client}
+    - from:
+        - ipBlock: {cidr: 130.211.0.0/22}
+        - ipBlock: {cidr: 35.191.0.0/16}
