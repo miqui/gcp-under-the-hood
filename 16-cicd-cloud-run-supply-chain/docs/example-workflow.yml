@@ -38,6 +38,6 @@ jobs:
             --keyversion-keyring=attestor-ring --keyversion-key=attestor-key --keyversion=1
       - name: Create Cloud Deploy release (canary 25% -> 50% -> 100%)
         run: |
-          gcloud deploy releases create "rel-${GITHUB_SHA::8}" \
+          gcloud deploy releases create "rel-${GITHUB_SHA::8}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
             --delivery-pipeline=supply-chain-pipeline --region="$REGION" \
             --source=clouddeploy --images=app="$IMAGE"
