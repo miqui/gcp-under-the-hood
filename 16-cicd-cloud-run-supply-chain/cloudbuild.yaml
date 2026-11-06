@@ -1,0 +1,13 @@
+# Build and push. Run from the project dir:
+#   gcloud builds submit . --config cloudbuild.yaml \
+#     --substitutions=_REPO=$GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/supply-chain,_TAG=v1
+steps:
+  - name: gcr.io/cloud-builders/docker
+    dir: go
+    args: ["build", "-t", "${_REPO}/app:${_TAG}", "--build-arg", "VERSION=${_TAG}", "."]
+images: ["${_REPO}/app:${_TAG}"]
+substitutions:
+  _REPO: REGION-docker.pkg.dev/PROJECT/supply-chain
+  _TAG: v1
+options:
+  logging: CLOUD_LOGGING_ONLY

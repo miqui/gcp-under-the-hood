@@ -8,6 +8,7 @@
 | `TF_VAR_project_id` | Same as `GCP_PROJECT_ID`, for Terraform |
 | `TF_VAR_region` | Same as `GCP_REGION` |
 | `TF_VAR_zone` | Same as `GCP_ZONE` |
+| `TF_VAR_github_repo` | GitHub repo (`owner/name`) for CI/CD trust; project 16 only |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Optional path to a credentials file (alternative to ADC) |
 
 ## Setup

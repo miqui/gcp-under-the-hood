@@ -14,6 +14,13 @@ Every project is standalone (no cross-project dependencies), but this order buil
 4. [`04-cloud-run-internals`](04-cloud-run-internals) — revisions, scaling, concurrency, cold starts, ingress and identity.
 5. [`05-gke-networking-identity`](05-gke-networking-identity) — pod/service networking, Workload Identity, network policy.
 6. [`06-data-tier`](06-data-tier) — Cloud SQL (private connectivity) and Cloud Storage access patterns.
+7. [`07-pubsub-delivery-semantics`](07-pubsub-delivery-semantics) — Pub/Sub ack deadlines, redelivery, ordering, dead-lettering, exactly-once.
+8. [`08-bigquery-internals`](08-bigquery-internals) — storage layout, partitioning/clustering, slots, query plans and cost.
+9. `09`–`12` — reserved/planned; not yet available.
+13. [`13-hybrid-and-dns`](13-hybrid-and-dns) — hybrid connectivity and Cloud DNS (private zones, forwarding, peering).
+14. [`14-security-perimeter`](14-security-perimeter) — VPC Service Controls and perimeter-style data exfiltration controls.
+15. [`15-observability-and-slos`](15-observability-and-slos) — logging, metrics, tracing, SLOs and burn-rate alerting.
+16. [`16-cicd-cloud-run-supply-chain`](16-cicd-cloud-run-supply-chain) — CI/CD to Cloud Run with Artifact Registry, provenance and Binary Authorization.
 
 Layout per project: `terraform/` (infra) and `go/` (workloads).
 

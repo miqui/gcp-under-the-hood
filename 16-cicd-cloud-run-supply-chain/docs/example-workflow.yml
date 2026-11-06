@@ -1,0 +1,43 @@
+# EXAMPLE ONLY - copy to .github/workflows/ in your own repo to use it.
+name: build-attest-deploy
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write # lets the job mint a GitHub OIDC token (no stored keys)
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }} # terraform output wif_provider
+          service_account: ${{ vars.DEPLOYER_SA }} # terraform output deployer_service_account
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Build and push
+        run: |
+          REPO=${REGION}-docker.pkg.dev/${PROJECT_ID}/supply-chain
+          gcloud builds submit . --config cloudbuild.yaml \
+            --substitutions=_REPO="$REPO",_TAG="${GITHUB_SHA}"
+          DIGEST=$(gcloud artifacts docker images describe "$REPO/app:${GITHUB_SHA}" --format='get(image_summary.digest)')
+          echo "IMAGE=$REPO/app@${DIGEST}" >> "$GITHUB_ENV"
+      - name: Attest (Binary Authorization)
+        run: |
+          gcloud container binauthz attestations sign-and-create \
+            --artifact-url="$IMAGE" \
+            --attestor=built-by-ci --attestor-project="$PROJECT_ID" \
+            --keyversion-project="$PROJECT_ID" --keyversion-location="$REGION" \
+            --keyversion-keyring=attestor-ring --keyversion-key=attestor-key --keyversion=1
+      - name: Create Cloud Deploy release (canary 25% -> 50% -> 100%)
+        run: |
+          gcloud deploy releases create "rel-${GITHUB_SHA::8}" \
+            --delivery-pipeline=supply-chain-pipeline --region="$REGION" \
+            --source=clouddeploy --images=app="$IMAGE"
